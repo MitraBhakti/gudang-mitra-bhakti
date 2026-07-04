@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  background-color: #f5f4ef;
+}
+
+body {
+  color: #1f2a24;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Signature element: rubber-stamp style status badge, evoking the
+   official "stempel" used on Indonesian village/administrative documents. */
+.stempel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.75rem;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  font-family: var(--font-fraunces), serif;
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: rotate(-2deg);
+  position: relative;
+}
+
+.stempel::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  opacity: 0.5;
+}
+
+.stempel-pending {
+  color: #8f6821;
+  background: #f6ebd4;
+}
+
+.stempel-approved {
+  color: #1f6f54;
+  background: #e7f1ec;
+}
+
+.stempel-rejected {
+  color: #ae423e;
+  background: #f6e3e2;
+}
+
+.stempel-paid {
+  color: #14503c;
+  background: #e7f1ec;
+  transform: rotate(-3deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

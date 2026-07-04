@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Daftar harga sewa perkakas (dikelola admin)
+model Item {
+  id        String   @id @default(cuid())
+  name      String
+  price     Int // harga dalam Rupiah
+  unit      String // contoh: "100 pcs", "pcs", "hari", "m²", "set", "unit"
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  loanItems LoanRequestItem[]
+}
+
+enum LoanStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+}
+
+// Pengajuan peminjaman perkakas oleh warga
+model LoanRequest {
+  id           String     @id @default(cuid())
+  borrowerName String // nama warga yang mengajukan/meminjam
+  phone        String?
+  eventDate    DateTime // tanggal perkakas dipakai
+  notes        String?
+  status       LoanStatus @default(PENDING)
+  totalAmount  Int
+  createdAt    DateTime   @default(now())
+  approvedAt   DateTime?
+  rejectedAt   DateTime?
+  paidAt       DateTime?
+  rejectReason String?
+
+  items       LoanRequestItem[]
+  transaction Transaction?
+}
+
+// Snapshot barang yang dipinjam di dalam satu pengajuan
+model LoanRequestItem {
+  id            String      @id @default(cuid())
+  loanRequestId String
+  loanRequest   LoanRequest @relation(fields: [loanRequestId], references: [id], onDelete: Cascade)
+  itemId        String?
+  item          Item?       @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  itemName      String // disimpan terpisah agar histori tidak berubah jika harga di master diedit
+  price         Int
+  unit          String
+  qty           Int
+  subtotal      Int
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+// Buku kas: semua pemasukan & pengeluaran gudang
+model Transaction {
+  id            String          @id @default(cuid())
+  type          TransactionType
+  description   String
+  amount        Int
+  date          DateTime        @default(now())
+  loanRequestId String?         @unique
+  loanRequest   LoanRequest?    @relation(fields: [loanRequestId], references: [id])
+  createdAt     DateTime        @default(now())
+}
