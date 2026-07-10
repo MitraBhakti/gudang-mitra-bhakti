@@ -31,9 +31,9 @@ enum LoanStatus {
 // Pengajuan peminjaman perkakas oleh warga
 model LoanRequest {
   id           String     @id @default(cuid())
-  borrowerName String // nama warga yang mengajukan/meminjam
+  borrowerName String
   phone        String?
-  eventDate    DateTime // tanggal perkakas dipakai
+  eventDate    DateTime
   notes        String?
   status       LoanStatus @default(PENDING)
   totalAmount  Int
@@ -42,7 +42,8 @@ model LoanRequest {
   rejectedAt   DateTime?
   paidAt       DateTime?
   rejectReason String?
-
+  isDeleted    Boolean    @default(false)
+  deletedAt    DateTime?
   items       LoanRequestItem[]
   transaction Transaction?
 }
