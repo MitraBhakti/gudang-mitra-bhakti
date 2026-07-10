@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { formatRupiah, formatTanggal, formatTanggalWaktu } from "@/lib/utils";
 import StatusStempel from "./StatusStempel";
 
@@ -21,12 +22,15 @@ type LoanRequest = {
 export default function LoanRequestTable({
   requests,
   isAdmin = false,
+  canDelete = false,
   onChanged,
 }: {
   requests: LoanRequest[];
   isAdmin?: boolean;
+  canDelete?: boolean;
   onChanged?: () => void;
 }) {
+  const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
@@ -45,11 +49,31 @@ export default function LoanRequestTable({
         alert(data.error ?? "Gagal memproses pengajuan");
       } else {
         onChanged?.();
+        router.refresh();
       }
     } finally {
       setBusyId(null);
       setRejectingId(null);
       setRejectReason("");
+    }
+  }
+
+  async function handleDelete(id: string, borrowerName: string) {
+    if (!confirm(`Hapus riwayat pengajuan "${borrowerName}"? Tindakan ini tidak bisa dibatalkan.`)) {
+      return;
+    }
+    setBusyId(id);
+    try {
+      const res = await fetch(`/api/loan-requests/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error ?? "Gagal menghapus riwayat");
+      } else {
+        onChanged?.();
+        router.refresh();
+      }
+    } finally {
+      setBusyId(null);
     }
   }
 
@@ -140,6 +164,16 @@ export default function LoanRequestTable({
                     className="w-full bg-accent text-white rounded-lg py-2 text-sm font-medium hover:bg-accent-dark transition-colors disabled:opacity-50"
                   >
                     Tandai Lunas (catat sebagai pemasukan)
+                  </button>
+                )}
+
+                {canDelete && (
+                  <button
+                    disabled={busyId === r.id}
+                    onClick={() => handleDelete(r.id, r.borrowerName)}
+                    className="w-full bg-white border border-danger text-danger rounded-lg py-2 text-sm font-medium hover:bg-danger-light transition-colors disabled:opacity-50"
+                  >
+                    {busyId === r.id ? "Menghapus..." : "🗑️ Hapus Riwayat"}
                   </button>
                 )}
               </div>
