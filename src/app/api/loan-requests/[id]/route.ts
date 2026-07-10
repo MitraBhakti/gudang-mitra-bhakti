@@ -73,3 +73,22 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
   return NextResponse.json({ error: "Aksi tidak dikenali" }, { status: 400 });
 }
+
+export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (session?.user?.role !== "admin") {
+    return NextResponse.json({ error: "Hanya admin yang bisa menghapus riwayat" }, { status: 403 });
+  }
+
+  const loanRequest = await prisma.loanRequest.findUnique({ where: { id: params.id } });
+  if (!loanRequest) {
+    return NextResponse.json({ error: "Pengajuan tidak ditemukan" }, { status: 404 });
+  }
+
+  const updated = await prisma.loanRequest.update({
+    where: { id: params.id },
+    data: { isDeleted: true, deletedAt: new Date() },
+  });
+
+  return NextResponse.json(updated);
+}
