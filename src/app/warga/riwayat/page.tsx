@@ -1,10 +1,16 @@
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import LoanRequestTable from "@/components/LoanRequestTable";
 
 export const dynamic = "force-dynamic";
 
 export default async function RiwayatPage() {
+  const session = await getServerSession(authOptions);
+  const isAdminUser = session?.user?.role === "admin";
+
   const requests = await prisma.loanRequest.findMany({
+    where: { isDeleted: false },
     include: { items: true },
     orderBy: { createdAt: "desc" },
   });
@@ -19,7 +25,7 @@ export default async function RiwayatPage() {
     <div>
       <h1 className="font-display font-semibold text-xl mb-1">Riwayat Pengajuan</h1>
       <p className="text-sm text-ink/50 mb-6">Ketuk salah satu untuk lihat detail barang.</p>
-      <LoanRequestTable requests={serialized as any} />
+      <LoanRequestTable requests={serialized as any} canDelete={isAdminUser} />
     </div>
   );
 }
