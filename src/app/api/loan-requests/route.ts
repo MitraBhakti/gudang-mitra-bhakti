@@ -11,6 +11,7 @@ export async function GET() {
   }
 
   const loanRequests = await prisma.loanRequest.findMany({
+    where: { isDeleted: false },
     include: { items: true },
     orderBy: { createdAt: "desc" },
   });
