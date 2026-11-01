@@ -7,14 +7,22 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          URL=$(printf '%s' "$SUPABASE_URL" | tr -d ' \r\n"')
-          KEY=$(printf '%s' "$SUPABASE_ANON_KEY" | tr -d ' \r\n"')
-          echo "URL length: ${#URL}"
-          echo "KEY length: ${#KEY}"
-          curl -sSf --max-time 30 --retry 3 --retry-delay 5 "$URL/rest/v1/Item?select=id&limit=1" \
-            -H "apikey: $KEY" \
-            -H "Authorization: Bearer $KEY"
+      - name: Ping Supabase
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          URL=$(printf '%s' "$SUPABASE_URL" | tr -d ' \r\n"')
+          KEY=$(printf '%s' "$SUPABASE_ANON_KEY" | tr -d ' \r\n"')
+          if [ -z "$URL" ] || [ -z "$KEY" ]; then
+            echo "Secret kosong, cek nama secret"; exit 1
+          fi
+          AUTH=()
+          if [[ "$KEY" == eyJ* ]]; then
+            AUTH=(-H "Authorization: Bearer $KEY")
+          fi
+          curl -sSf --max-time 30 --retry 3 --retry-delay 5 \
+            "$URL/rest/v1/Item?select=id&limit=1" \
+            -H "apikey: $KEY" "${AUTH[@]}"
+          echo
+          echo "OK: database tersentuh"
