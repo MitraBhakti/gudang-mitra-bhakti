@@ -12,7 +12,7 @@ jobs:
           KEY=$(printf '%s' "$SUPABASE_ANON_KEY" | tr -d ' \r\n"')
           echo "URL length: ${#URL}"
           echo "KEY length: ${#KEY}"
-          curl -sSf "$URL/rest/v1/Item?select=id&limit=1" \
+          curl -sSf --max-time 30 --retry 3 --retry-delay 5 "$URL/rest/v1/Item?select=id&limit=1" \
             -H "apikey: $KEY" \
             -H "Authorization: Bearer $KEY"
         env:
