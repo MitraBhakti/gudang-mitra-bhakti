@@ -8,11 +8,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          echo "URL length: ${#SUPABASE_URL}"
-          echo "KEY length: ${#SUPABASE_ANON_KEY}"
-          curl -sSf "$SUPABASE_URL/rest/v1/Item?select=id&limit=1" \
-            -H "apikey: $SUPABASE_ANON_KEY" \
-            -H "Authorization: Bearer $SUPABASE_ANON_KEY"
+          URL=$(printf '%s' "$SUPABASE_URL" | tr -d ' \r\n"')
+          KEY=$(printf '%s' "$SUPABASE_ANON_KEY" | tr -d ' \r\n"')
+          echo "URL length: ${#URL}"
+          echo "KEY length: ${#KEY}"
+          curl -sSf "$URL/rest/v1/Item?select=id&limit=1" \
+            -H "apikey: $KEY" \
+            -H "Authorization: Bearer $KEY"
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
